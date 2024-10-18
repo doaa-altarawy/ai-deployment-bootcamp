@@ -1,36 +1,41 @@
+import joblib
+import numpy as np
 import os
+import pickle
 import logging
-import tarfile
-from typing import Any, Dict
 
-from transformers import pipeline
-
-from google.cloud.aiplatform.prediction.predictor import Predictor
+from google.cloud.aiplatform.constants import prediction
 from google.cloud.aiplatform.utils import prediction_utils
+from google.cloud.aiplatform.prediction.predictor import Predictor
+
+from model_training.preprocessing import TypeTransformer
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class HuggingFacePredictor(Predictor):
-    def __init__(self) -> None:
-        pass
+class SklearnPredictor(Predictor):
 
+    def __init__(self):
+        return
+    
     def load(self, artifacts_uri: str) -> None:
-        """Loads the preprocessor and model artifacts."""
-        logger.info(f"Downloading artifacts from {artifacts_uri}")
         prediction_utils.download_model_artifacts(artifacts_uri)
-        logger.info("Artifacts successfully downloaded!")
+        model_path = "./diabetes_randomforest_pipeline.pkl"
+        logger.info(f">>>> Loading model from: {model_path}")
+        self._model = joblib.load(model_path)
+        
+        logger.info(f">>>> Model is loaded successfully")
 
-        os.makedirs("./model", exist_ok=True)
-        with tarfile.open("model.tar.gz", "r:gz") as tar:
-            tar.extractall(path="./model")
+    def predict(self, instances: np.ndarray) -> np.ndarray:
+        return self._model.predict(instances)
+    
+    # def preprocess(self, prediction_input: dict) -> np.ndarray:
+    #     logger.info(">>>> preprocess started")
+    #     instances = prediction_input["instances"]
+    #     logger.info(">>>> preprocess returning")
+    #     return np.asarray(instances)
 
-        logger.info(f"HF_TASK value is {os.getenv('HF_TASK')}")
-        self._pipeline = pipeline(os.getenv("HF_TASK", ""), model="./model", device_map="auto")
-        logger.info("`pipeline` successfully loaded!")
-
-        logger.info(f"`pipeline` is using device={self._pipeline.device}")
-
-    def predict(self, instances: Dict[str, Any]) -> Dict[str, Any]:
-        return self._pipeline(**instances)
+    # def postprocess(self, prediction_results: np.ndarray) -> dict:
+    #     logger.info(">>>> postprocess started and returning")
+    #     return {"predictions": prediction_results.tolist()}

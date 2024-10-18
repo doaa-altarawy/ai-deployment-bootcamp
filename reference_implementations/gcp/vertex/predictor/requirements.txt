@@ -1,7 +1,7 @@
 google-cloud-aiplatform[prediction]==1.66.0
-torch==2.2.0
-transformers==4.44.0
-accelerate==0.27.0
-pandas==2.0.3
+scikit-learn
+pandas
 
-numpy<2
+
+# custom model dependencies
+model_training @ git+https://github.com/doaa-altarawy/ai-deployment-bootcamp.git@main#egg=model_training&subdirectory=model_training
