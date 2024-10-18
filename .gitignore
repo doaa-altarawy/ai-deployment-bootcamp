@@ -10,3 +10,9 @@
 
 *bart-large-mnli/
 *ml-api.zip
+/.vscode
+*env/
+*__pycache__/
+models/*
+.ipynb_checkpoints
+*.egg-info
